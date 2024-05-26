@@ -6,14 +6,14 @@ class CustomUser(models.Model):
     username = models.CharField(unique=True, max_length=255)
     email = models.EmailField(unique=True, max_length=255)
     password = models.CharField(max_length=255)
-    height = models.CharField(max_length=255)
-    weight = models.CharField(max_length=255)
-    birth_date = models.DateField()
-    gender = models.CharField(max_length=255)
+    height = models.CharField(max_length=255, null=True)
+    weight = models.CharField(max_length=255, null=True)
+    birth_date = models.DateField(null=True)
+    gender = models.CharField(max_length=255, null=True)
+    register_day = models.DateField()
     is_anonymous = False
     is_authenticated = True
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'password', 'height', 'weight', 'birth_date', 'gender']
 
     def __str__(self):
         return self.username
@@ -35,12 +35,11 @@ class UserSession(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     user_token = models.CharField(max_length=255)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
     ip_address = models.CharField(max_length=255)
     device_info = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.user + " session"
+        return self.user.username + " session"
 
     def to_json_(self):
         return {
