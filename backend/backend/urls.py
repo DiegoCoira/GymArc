@@ -17,6 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from gymarc import views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('sign-up/', views.sign_up),
+    path('sign-in/', views.sign_in)
 ]
