@@ -22,5 +22,6 @@ from gymarc import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('sign-up/', views.sign_up),
-    path('sign-in/', views.sign_in)
+    path('sign-in/', views.sign_in),
+    path('user-data/', views.user_data)
 ]

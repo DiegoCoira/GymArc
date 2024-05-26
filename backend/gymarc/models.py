@@ -22,7 +22,6 @@ class CustomUser(models.Model):
         return {
             "username": self.username,
             "email": self.email,
-            "password": self.password,
             "height": self.height,
             "weight": self.weight,
             "birth_date": self.birth_date,
@@ -39,18 +38,7 @@ class UserSession(models.Model):
     device_info = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.user.username + " session"
-
-    def to_json_(self):
-        return {
-            "user": self.user,
-            "user_token": self.user_token,
-            "start_time": self.start_time,
-            "altura": self.altura,
-            "end_time": self.end_time,
-            "ip_address": self.ip_address,
-            "device_info": self.device_info
-        }
+        return self.user.username
 
 
 class Muscle(models.Model):
