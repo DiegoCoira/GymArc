@@ -68,7 +68,8 @@ def sign_up(request):
     salted_and_hashed_pass = bcrypt.hashpw(json_password.encode('utf8'), bcrypt.gensalt()).decode('utf8')
     current_datetime = timezone.now()
 
-    user_object = CustomUser(username=json_username, email=json_email, password=salted_and_hashed_pass, register_day=current_datetime)
+    user_object = CustomUser(username=json_username, email=json_email, password=salted_and_hashed_pass,
+                             register_day=current_datetime)
     user_object.save()
 
     # Generamos un token para el usuario
@@ -77,7 +78,40 @@ def sign_up(request):
     device_info = body_json['device_info']
 
     # Guardamos la session
-    user_session = UserSession(user=user_object, user_token=token, start_time=current_datetime, ip_address=ip_address, device_info=device_info )
+    user_session = UserSession(user=user_object, user_token=token, start_time=current_datetime, ip_address=ip_address,
+                               device_info=device_info)
     user_session.save()
 
     return JsonResponse({"token": token}, status=200)
+
+
+@csrf_exempt
+def user_data(request):
+    if request.method != "PUT":
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+    user_token = request.headers.get('Authorization')
+    if not user_token:
+        return JsonResponse({'error': 'Missing token parameter in the request'}, status=400)
+
+    body_json = json.loads(request.body)
+    required_params = ['height', 'weight', 'birth_date', 'gender']
+
+    if not all(param in body_json for param in required_params):
+        return JsonResponse({'error': 'Missing parameter in body request'}, status=400)
+    try:
+        session = UserSession.objects.get(user_token=user_token)
+        user = session.user  # Obtenemos el usuario directamente desde la sesión
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'User not found or invalid token'}, status=404)
+
+    try:
+        user.height = body_json['height']
+        user.weight = body_json['weight']
+        user.birth_date = body_json['birth_date']
+        user.gender = body_json['gender']
+        user.save()
+
+        return JsonResponse({'message': 'User data updated successfully'}, status=200)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
