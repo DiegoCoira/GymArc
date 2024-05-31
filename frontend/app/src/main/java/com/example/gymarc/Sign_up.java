@@ -3,6 +3,8 @@ package com.example.gymarc;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -103,25 +105,45 @@ public class Sign_up extends AppCompatActivity {
     private void send_post_register() {
         JSONObject body = new JSONObject();
         try {
-            body.put("name", name);
+            body.put("username", name);
             body.put("email", email);
             body.put("password", password);
             body.put("ip_address", getIPAddress());
             body.put("device_info", getDeviceInfo());
+            Log.e(TAG, "Body: " + body.toString());
         } catch (JSONException e) {
             return;
         }
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
-                "http://10.0.2.2:8000/sign-up/", body,
+                "http://10.0.2.2:8000/signUp/", body,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(Sign_up.this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-                        Log.d(TAG, "Response: " + response.toString());
-                        // send_log_request();
+                        progressBar.setVisibility(View.INVISIBLE);
+                        String receivedToken;
+                        try {
+                            receivedToken = response.getString("token");
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        // Obtén una referencia a SharedPreferences
+                        SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", Context.MODE_PRIVATE);
+                        // Crea un editor de SharedPreferences para realizar cambios
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                        // Almacena el token de sesión
+                        editor.putString("token", receivedToken);
+                        // Guarda los cambios
+                        editor.apply();
+
+                        /*
+                          Intent intent = new Intent(Sign_up.this, MainDodoDex.class);
+                          startActivity(intent);
+                          finishAffinity();
+                        */
                     }
                 },
                 new Response.ErrorListener() {
@@ -129,6 +151,7 @@ public class Sign_up extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
                         progressBar.setVisibility(View.INVISIBLE);
                         if (error.networkResponse == null) {
+                            Log.e(TAG, "Error Response: " + error.toString());
                             Toast.makeText(Sign_up.this, "No se pudo alcanzar al servidor", Toast.LENGTH_LONG).show();
                         } else {
                             try {
