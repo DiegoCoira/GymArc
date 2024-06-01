@@ -29,43 +29,39 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-public class Sign_up extends AppCompatActivity {
-    private final Context context = Sign_up.this;
-    private EditText editTextUsername, editTextEmail, editTextPassword, editTextRepeatPassword;
-    private Button buttonRegister, buttonLogin;
+public class Sign_in extends AppCompatActivity {
+    private final Context context = Sign_in.this;
+    private EditText  editTextEmail, editTextPassword;
+    private Button buttonLogin, buttonRegister;
     private ProgressBar progressBar;
-    private String name, email, password, rpassword;
+    private String email, password;
     private boolean check_info;
     private RequestQueue queue;
 
-    private static final String TAG = "Sign_In";
+    private static final String TAG = "Sign_Up";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_up);
+        setContentView(R.layout.activity_sign_in);
 
-        editTextUsername = findViewById(R.id.sign_up_edittext_username);
-        editTextEmail = findViewById(R.id.sign_up_edittext_email);
-        editTextPassword = findViewById(R.id.sign_up_edittext_password);
-        editTextRepeatPassword = findViewById(R.id.sign_up_edittext_rpassword);
-        buttonRegister = findViewById(R.id.sign_up_register_button);
-        buttonLogin = findViewById(R.id.sign_up_login_button);
+        editTextEmail = findViewById(R.id.sign_in_edittext_email);
+        editTextPassword = findViewById(R.id.sign_in_edittext_password);
+        buttonLogin = findViewById(R.id.sign_in_login_button);
+        buttonRegister = findViewById(R.id.sign_in_register_button);
         progressBar = findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
 
         // Inicializar RequestQueue
         queue = Volley.newRequestQueue(context);
 
-        buttonRegister.setOnClickListener(new View.OnClickListener() {
+        buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 check_info = true;
 
                 email = editTextEmail.getText().toString();
-                name = editTextUsername.getText().toString();
                 password = editTextPassword.getText().toString();
-                rpassword = editTextRepeatPassword.getText().toString();
 
                 check_info = check_inputs();
 
@@ -75,36 +71,23 @@ public class Sign_up extends AppCompatActivity {
                 }
             }
         });
-
-        buttonLogin.setOnClickListener(new View.OnClickListener() {
+        buttonRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Sign_up.this, Sign_in.class);
+                Intent intent = new Intent(Sign_in.this, Sign_up.class);
                 startActivity(intent);
             }
         });
     }
 
     private boolean check_inputs() {
-        if (name.isEmpty()) {
-            Toast.makeText(Sign_up.this, "Introduce un nombre de usuario", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
         if (email.isEmpty()) {
-            Toast.makeText(Sign_up.this, "Introduce un email", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Introduce un email", Toast.LENGTH_SHORT).show();
             return false;
         }
 
-        if (password.isEmpty() || rpassword.isEmpty()) {
-            Toast.makeText(Sign_up.this, "Introduce todos los datos", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
-        if (!password.equals(rpassword)) {
-            editTextPassword.setText("");
-            editTextRepeatPassword.setText("");
-            Toast.makeText(Sign_up.this, "Las contraseñas han de ser iguales", Toast.LENGTH_SHORT).show();
+        if (password.isEmpty()) {
+            Toast.makeText(context, "Introduce todos los datos", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -114,7 +97,6 @@ public class Sign_up extends AppCompatActivity {
     private void send_post_register() {
         JSONObject body = new JSONObject();
         try {
-            body.put("username", name);
             body.put("email", email);
             body.put("password", password);
             body.put("ip_address", getIPAddress());
@@ -126,7 +108,7 @@ public class Sign_up extends AppCompatActivity {
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
-                "http://10.0.2.2:8000/signUp/", body,
+                "http://10.0.2.2:8000/signIn/", body,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -161,12 +143,12 @@ public class Sign_up extends AppCompatActivity {
                         progressBar.setVisibility(View.INVISIBLE);
                         if (error.networkResponse == null) {
                             Log.e(TAG, "Error Response: " + error.toString());
-                            Toast.makeText(Sign_up.this, "No se pudo alcanzar al servidor", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "No se pudo alcanzar al servidor", Toast.LENGTH_LONG).show();
                         } else {
                             try {
                                 String data = new String(error.networkResponse.data, StandardCharsets.UTF_8);
                                 JSONObject json_error_data = new JSONObject(data);
-                                Toast.makeText(Sign_up.this, "Error: " + json_error_data.optString("error"), Toast.LENGTH_LONG).show();
+                                Toast.makeText(context, "Error: " + json_error_data.optString("error"), Toast.LENGTH_LONG).show();
                                 Log.e(TAG, "Error Response: " + json_error_data.toString());
                             } catch (JSONException e) {
                                 Log.e(TAG, "JSON Exception: " + e.getMessage());
