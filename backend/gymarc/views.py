@@ -20,14 +20,14 @@ def sign_in(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Not supported HTTP method'}, status=405)
     body_json = json.loads(request.body)
-    required_params = ['username', 'password', 'ip_address', 'device_info']
+    required_params = ['email', 'password', 'ip_address', 'device_info']
     missing_params = [param for param in required_params if param not in body_json]
     if missing_params:
         return JsonResponse({"error": "You are missing a parameter"}, status=400)
-    json_username = body_json['username']
+    json_email = body_json['email']
     json_password = body_json['password']
     try:
-        db_user = CustomUser.objects.get(username=json_username)
+        db_user = CustomUser.objects.get(email=json_email)
     except CustomUser.DoesNotExist:
         return JsonResponse({"error": "User not in database"}, status=404)
 
@@ -36,6 +36,9 @@ def sign_in(request):
         ip_address = body_json['ip_address']
         device_info = body_json['device_info']
         current_datetime = timezone.now()
+        db_session = UserSession.objects.get(user=db_user);
+        if db_session:
+            return JsonResponse({"token": db_session.user_token}, status=201)
         user_session = UserSession(user=db_user, user_token=token, start_time=current_datetime,
                                    ip_address=ip_address, device_info=device_info)
         user_session.save()
