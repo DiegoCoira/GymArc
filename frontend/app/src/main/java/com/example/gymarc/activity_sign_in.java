@@ -29,8 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-public class Sign_in extends AppCompatActivity {
-    private final Context context = Sign_in.this;
+public class activity_sign_in extends AppCompatActivity {
+    private final Context context = activity_sign_in.this;
     private EditText  editTextEmail, editTextPassword;
     private Button buttonLogin, buttonRegister;
     private ProgressBar progressBar;
@@ -43,6 +43,14 @@ public class Sign_in extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", MODE_PRIVATE);
+        String token = sharedPreferences.getString("token", null);
+
+        if(token != null){
+            Intent intent = new Intent(activity_sign_in.this, activity_workout.class);
+            startActivity(intent);
+        }
         setContentView(R.layout.activity_sign_in);
 
         editTextEmail = findViewById(R.id.sign_in_edittext_email);
@@ -66,7 +74,7 @@ public class Sign_in extends AppCompatActivity {
                 check_info = check_inputs();
 
                 if (check_info) {
-                    send_post_register();
+                    send_post_login();
                     progressBar.setVisibility(View.VISIBLE);
                 }
             }
@@ -74,7 +82,7 @@ public class Sign_in extends AppCompatActivity {
         buttonRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Sign_in.this, Sign_up.class);
+                Intent intent = new Intent(activity_sign_in.this, activity_sign_up.class);
                 startActivity(intent);
             }
         });
@@ -94,21 +102,20 @@ public class Sign_in extends AppCompatActivity {
         return true;
     }
 
-    private void send_post_register() {
+    private void send_post_login() {
         JSONObject body = new JSONObject();
         try {
             body.put("email", email);
             body.put("password", password);
             body.put("ip_address", getIPAddress());
             body.put("device_info", getDeviceInfo());
-            Log.e(TAG, "Body: " + body.toString());
         } catch (JSONException e) {
             return;
         }
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
-                "http://10.0.2.2:8000/signIn/", body,
+                "http://10.0.2.2:8000/sign-in/", body,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -130,11 +137,9 @@ public class Sign_in extends AppCompatActivity {
                         // Guarda los cambios
                         editor.apply();
 
-                        /*
-                          Intent intent = new Intent(Sign_up.this, MainDodoDex.class);
-                          startActivity(intent);
-                          finishAffinity();
-                        */
+                        Intent intent = new Intent(activity_sign_in.this, activity_workout.class);
+                        startActivity(intent);
+                        finishAffinity();
                     }
                 },
                 new Response.ErrorListener() {

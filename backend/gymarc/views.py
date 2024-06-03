@@ -118,3 +118,44 @@ def user_data(request):
         return JsonResponse({'message': 'User data updated successfully'}, status=200)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def weekly_training(request):
+    if request.method != "GET":
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+    user_token = request.headers.get('Authorization')
+    if not user_token:
+        return JsonResponse({'error': 'Missing token parameter in the request'}, status=400)
+
+    try:
+        session = UserSession.objects.get(user_token=user_token)
+        user = session.user
+    except ObjectDoesNotExist:
+        return JsonResponse({'error': 'User not found or invalid token'}, status=404)
+
+    try:
+        routines = WeeklyRoutine.objects.filter(user=user)
+        routine_data = []
+
+        for routine in routines:
+            routine_days = WeeklyRoutineDay.objects.filter(routine=routine)
+            routine_days_data = []
+
+            for routine_day in routine_days:
+                muscle_names = [muscle.name for muscle in routine_day.muscles.all()]
+                routine_day_data = {
+                    'day': routine_day.day,
+                    'muscles': muscle_names,
+                }
+                routine_days_data.append(routine_day_data)
+
+            routine_data.append({
+                'routine_name': routine.name,
+                'routine_days': routine_days_data
+            })
+
+        return JsonResponse(routine_data, status=200, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

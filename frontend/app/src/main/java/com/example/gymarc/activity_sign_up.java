@@ -29,8 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 
-public class Sign_up extends AppCompatActivity {
-    private final Context context = Sign_up.this;
+public class activity_sign_up extends AppCompatActivity {
+    private final Context context = activity_sign_up.this;
     private EditText editTextUsername, editTextEmail, editTextPassword, editTextRepeatPassword;
     private Button buttonRegister, buttonLogin;
     private ProgressBar progressBar;
@@ -43,6 +43,13 @@ public class Sign_up extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", MODE_PRIVATE);
+        String token = sharedPreferences.getString("token", null);
+
+        if(token != null){
+            Intent intent = new Intent(activity_sign_up.this, activity_workout.class);
+            startActivity(intent);
+        }
         setContentView(R.layout.activity_sign_up);
 
         editTextUsername = findViewById(R.id.sign_up_edittext_username);
@@ -79,7 +86,7 @@ public class Sign_up extends AppCompatActivity {
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Sign_up.this, Sign_in.class);
+                Intent intent = new Intent(activity_sign_up.this, activity_sign_in.class);
                 startActivity(intent);
             }
         });
@@ -87,24 +94,24 @@ public class Sign_up extends AppCompatActivity {
 
     private boolean check_inputs() {
         if (name.isEmpty()) {
-            Toast.makeText(Sign_up.this, "Introduce un nombre de usuario", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_sign_up.this, "Introduce un nombre de usuario", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (email.isEmpty()) {
-            Toast.makeText(Sign_up.this, "Introduce un email", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_sign_up.this, "Introduce un email", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (password.isEmpty() || rpassword.isEmpty()) {
-            Toast.makeText(Sign_up.this, "Introduce todos los datos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_sign_up.this, "Introduce todos los datos", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (!password.equals(rpassword)) {
             editTextPassword.setText("");
             editTextRepeatPassword.setText("");
-            Toast.makeText(Sign_up.this, "Las contraseñas han de ser iguales", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_sign_up.this, "Las contraseñas han de ser iguales", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -126,7 +133,7 @@ public class Sign_up extends AppCompatActivity {
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
-                "http://10.0.2.2:8000/signUp/", body,
+                "http://10.0.2.2:8000/sign-up/", body,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -148,11 +155,9 @@ public class Sign_up extends AppCompatActivity {
                         // Guarda los cambios
                         editor.apply();
 
-                        /*
-                          Intent intent = new Intent(Sign_up.this, MainDodoDex.class);
+                          Intent intent = new Intent(activity_sign_up.this, activity_workout.class);
                           startActivity(intent);
                           finishAffinity();
-                        */
                     }
                 },
                 new Response.ErrorListener() {
@@ -161,12 +166,12 @@ public class Sign_up extends AppCompatActivity {
                         progressBar.setVisibility(View.INVISIBLE);
                         if (error.networkResponse == null) {
                             Log.e(TAG, "Error Response: " + error.toString());
-                            Toast.makeText(Sign_up.this, "No se pudo alcanzar al servidor", Toast.LENGTH_LONG).show();
+                            Toast.makeText(activity_sign_up.this, "No se pudo alcanzar al servidor", Toast.LENGTH_LONG).show();
                         } else {
                             try {
                                 String data = new String(error.networkResponse.data, StandardCharsets.UTF_8);
                                 JSONObject json_error_data = new JSONObject(data);
-                                Toast.makeText(Sign_up.this, "Error: " + json_error_data.optString("error"), Toast.LENGTH_LONG).show();
+                                Toast.makeText(activity_sign_up.this, "Error: " + json_error_data.optString("error"), Toast.LENGTH_LONG).show();
                                 Log.e(TAG, "Error Response: " + json_error_data.toString());
                             } catch (JSONException e) {
                                 Log.e(TAG, "JSON Exception: " + e.getMessage());

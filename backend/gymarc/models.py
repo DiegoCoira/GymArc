@@ -1,7 +1,12 @@
 from django.db import models
+from django.db.models import UniqueConstraint
 
 
 class CustomUser(models.Model):
+    gender_choices = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+    ]
     user_id = models.AutoField(primary_key=True)
     username = models.CharField(unique=True, max_length=255)
     email = models.EmailField(unique=True, max_length=255)
@@ -9,24 +14,11 @@ class CustomUser(models.Model):
     height = models.CharField(max_length=255, null=True)
     weight = models.CharField(max_length=255, null=True)
     birth_date = models.DateField(null=True)
-    gender = models.CharField(max_length=255, null=True)
+    gender = models.CharField(max_length=255, null=True, choices=gender_choices)
     register_day = models.DateField()
-    is_anonymous = False
-    is_authenticated = True
-    USERNAME_FIELD = 'username'
 
     def __str__(self):
         return self.username
-
-    def to_json_edit_user(self):
-        return {
-            "username": self.username,
-            "email": self.email,
-            "height": self.height,
-            "weight": self.weight,
-            "birth_date": self.birth_date,
-            "gender": self.gender
-        }
 
 
 class UserSession(models.Model):
@@ -48,79 +40,89 @@ class Muscle(models.Model):
     def __str__(self):
         return self.name
 
-    def _to_json_(self):
-        return{
-            "name": self.name
+
+class WeeklyRoutine(models.Model):
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.name + " " + self.user.username
+
+
+class WeeklyRoutineDay(models.Model):
+    DAY_CHOICES = [
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday'),
+    ]
+
+    routine = models.ForeignKey(WeeklyRoutine, related_name='days', on_delete=models.CASCADE)
+    day = models.CharField(max_length=10, choices=DAY_CHOICES)
+    muscles = models.ManyToManyField(Muscle, blank=True)
+
+    def to_json(self):
+        return {
+            "name": self.routine.name,
+            "day": self.day,
+            "muscles": self.muscles,
         }
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['routine', 'day'], name='unique_routine_day')
+        ]
+
+    def __str__(self):
+        muscles_list = ", ".join([muscle.name for muscle in self.muscles.all()])
+        return f"{self.day} ({muscles_list})"
 
 
 class Exercise(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
-    muscle = models.ManyToManyField(Muscle)
-    CATEGORY_CHOICES = (
-        ('cardio', 'Cardio'),
-        ('strength', 'Strength'),
-        ('flexibility', 'Flexibility'),
-    )
-    category = models.CharField(max_length=255, choices=CATEGORY_CHOICES)
-    description = models.CharField(max_length=255, null=True)
-    video = models.CharField(max_length=255, null=True)
-    image = models.CharField(max_length=255, null=True)
+    name = models.CharField(max_length=100)
+    muscles = models.ManyToManyField(Muscle, blank=True)
 
     def __str__(self):
         return self.name
 
-    def _to_json_(self):
-        return{
-            "name": self.name,
-            "muscle": self.muscle,
-            "category": self.category,
-            "description": self.description,
-            "video": self.video,
-            "image": self.image,
-        }
 
-
-class Routine(models.Model):
-    id = models.AutoField(primary_key=True)
-    date = models.DateTimeField()
-    exercises = models.ManyToManyField(Exercise, through='ExerciseTraining')
-    rating = models.CharField(max_length=255)
+class PlannedExercise(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.name
-
-    def _to_json_(self):
-        return{
-            "date": self.date,
-            "exercises": self.exercises,
-            "rating": self.rating,
-            "user": self.user,
-        }
-
-
-class ExerciseTraining(models.Model):
-    id = models.AutoField(primary_key=True)
+    routine_day = models.ForeignKey(WeeklyRoutineDay, related_name='planned_exercises', on_delete=models.CASCADE)
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE)
-    routine = models.ForeignKey(Routine, on_delete=models.CASCADE)
-    planned_sets = models.CharField(max_length=255, null=True)
-    actual_sets = models.IntegerField()
-    planned_reps = models.CharField(max_length=255, null=True)
-    actual_reps = models.IntegerField()
-    weight = models.IntegerField()
 
     def __str__(self):
-        return self.exercise + " " + self.routine.date
+        return self.exercise.name
 
-    def _to_json_(self):
-        return{
-            "exercise": self.exercise,
-            "routine": self.routine,
-            "planned_sets": self.planned_sets,
-            "actual_sets": self.actual_sets,
-            "planned_reps": self.planned_reps,
-            "actual_reps": self.actual_reps,
-            "weight": self.weight,
-        }
+
+class PlannedSet(models.Model):
+    planned_exercise = models.ForeignKey(PlannedExercise, related_name='planned_sets', on_delete=models.CASCADE)
+    set_number = models.IntegerField()
+    min_reps = models.IntegerField()
+    max_reps = models.IntegerField()
+    weight = models.FloatField()
+
+    def __str__(self):
+        return f"{self.planned_exercise.exercise.name} - set: {self.set_number}"
+
+
+class CompletedExercise(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    planned_exercise = models.ForeignKey(PlannedExercise, related_name='completed_exercises', on_delete=models.CASCADE)
+    date = models.DateField()
+
+    def __str__(self):
+        return self.planned_exercise.exercise.name
+
+
+class CompletedSet(models.Model):
+    completed_exercise = models.ForeignKey(CompletedExercise, related_name='completed_sets', on_delete=models.CASCADE)
+    set_number = models.IntegerField()
+    actual_reps = models.IntegerField()
+    actual_weight = models.FloatField()
+
+    def __str__(self):
+        return f"{self.completed_exercise.planned_exercise.exercise.name} - set: {self.set_number}"
