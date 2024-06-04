@@ -19,6 +19,12 @@
             android:name=".activity_workout"
             android:exported="true" />
         <activity
+            android:name=".activity_profile"
+            android:exported="true" />
+        <activity
+            android:name=".activity_schedule_routine"
+            android:exported="true" />
+        <activity
             android:name=".activity_sign_in"
             android:exported="true">
             <intent-filter>

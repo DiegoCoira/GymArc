@@ -47,7 +47,7 @@ public class activity_sign_up extends AppCompatActivity {
         String token = sharedPreferences.getString("token", null);
 
         if(token != null){
-            Intent intent = new Intent(activity_sign_up.this, activity_workout.class);
+            Intent intent = new Intent(activity_sign_up.this, activity_schedule_routine.class);
             startActivity(intent);
         }
         setContentView(R.layout.activity_sign_up);
@@ -155,7 +155,7 @@ public class activity_sign_up extends AppCompatActivity {
                         // Guarda los cambios
                         editor.apply();
 
-                          Intent intent = new Intent(activity_sign_up.this, activity_workout.class);
+                          Intent intent = new Intent(activity_sign_up.this, activity_schedule_routine.class);
                           startActivity(intent);
                           finishAffinity();
                     }
