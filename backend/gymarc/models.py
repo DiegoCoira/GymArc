@@ -15,6 +15,7 @@ class CustomUser(models.Model):
     weight = models.CharField(max_length=255, null=True)
     birth_date = models.DateField(null=True)
     gender = models.CharField(max_length=255, null=True, choices=gender_choices)
+    activity_factor = models.CharField(max_length=255, null=True)
     register_day = models.DateField()
 
     def __str__(self):

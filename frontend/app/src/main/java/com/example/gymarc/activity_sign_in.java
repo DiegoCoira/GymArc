@@ -60,7 +60,6 @@ public class activity_sign_in extends AppCompatActivity {
         progressBar = findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
 
-        // Inicializar RequestQueue
         queue = Volley.newRequestQueue(context);
 
         buttonLogin.setOnClickListener(new View.OnClickListener() {
@@ -82,8 +81,9 @@ public class activity_sign_in extends AppCompatActivity {
         buttonRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(activity_sign_in.this, activity_sign_up.class);
+                Intent intent = new Intent(context, activity_sign_up.class);
                 startActivity(intent);
+                finish();
             }
         });
     }

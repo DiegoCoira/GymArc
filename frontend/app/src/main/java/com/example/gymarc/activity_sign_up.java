@@ -43,14 +43,13 @@ public class activity_sign_up extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_sign_up);
         SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", MODE_PRIVATE);
         String token = sharedPreferences.getString("token", null);
-
         if(token != null){
             Intent intent = new Intent(activity_sign_up.this, activity_schedule_routine.class);
             startActivity(intent);
         }
-        setContentView(R.layout.activity_sign_up);
 
         editTextUsername = findViewById(R.id.sign_up_edittext_username);
         editTextEmail = findViewById(R.id.sign_up_edittext_email);
