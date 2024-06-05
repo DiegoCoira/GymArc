@@ -1,6 +1,9 @@
 import json
 import secrets
+from datetime import datetime
+
 import bcrypt
+import traceback
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -90,34 +93,60 @@ def sign_up(request):
 
 @csrf_exempt
 def user_data(request):
-    if request.method != "PUT":
+    if request.method == "PUT":
+        user_token = request.headers.get('Authorization')
+        print("User token received:", user_token)
+        if not user_token:
+            return JsonResponse({'error': 'Missing token parameter in the request'}, status=400)
+
+        body_json = json.loads(request.body)
+        required_params = ['height', 'weight', 'birth_date', 'gender', 'activity_factor']
+
+        if not all(param in body_json for param in required_params):
+            return JsonResponse({'error': 'Missing parameter in body request'}, status=400)
+        try:
+            session = UserSession.objects.get(user_token=user_token)
+            print("session: ", session)
+            user = session.user
+            print("user: ", user)
+            user_data_put = CustomUser.objects.get(username=user.username);
+            print("user_data: ", user_data_put)
+        except ObjectDoesNotExist:
+            return JsonResponse({'error': 'User not found or invalid token'}, status=404)
+
+        try:
+            user_data_put.height = body_json['height']
+            user_data_put.weight = body_json['weight']
+            user_data_put.birth_date = body_json['birth_date']
+            user_data_put.gender = body_json['gender']
+            user_data_put.activity_factor = body_json['activity_factor']
+            user_data_put.save()
+            return JsonResponse({'message': 'User data updated successfully'}, status=200)
+        except Exception as e:
+            print("Error while saving user data: ", str(e))
+            traceback.print_exc()
+            return JsonResponse({'error': str(e)}, status=500)
+    elif request.method == "GET":
+        user_token = request.headers.get('Authorization')
+        if not user_token:
+            return JsonResponse({'error': 'Missing token parameter in the request'}, status=400)
+        try:
+            session = UserSession.objects.get(user_token=user_token)
+            user = session.user
+            user_data_get = CustomUser.objects.get(username=user.username)
+            data = {
+                'height': user_data_get.height,
+                'weight': user_data_get.weight,
+                'birth_date': user_data_get.birth_date,
+                'gender': user_data_get.gender,
+                'activity_factor': user_data_get.activity_factor
+            }
+            return JsonResponse(data, status=200)
+        except ObjectDoesNotExist:
+            return JsonResponse({'error': 'User not found or invalid token'}, status=404)
+
+    else:
         return JsonResponse({'error': 'Invalid request'}, status=400)
-
-    user_token = request.headers.get('Authorization')
-    if not user_token:
-        return JsonResponse({'error': 'Missing token parameter in the request'}, status=400)
-
-    body_json = json.loads(request.body)
-    required_params = ['height', 'weight', 'birth_date', 'gender']
-
-    if not all(param in body_json for param in required_params):
-        return JsonResponse({'error': 'Missing parameter in body request'}, status=400)
-    try:
-        session = UserSession.objects.get(user_token=user_token)
-        user = session.user  # Obtenemos el usuario directamente desde la sesión
-    except ObjectDoesNotExist:
-        return JsonResponse({'error': 'User not found or invalid token'}, status=404)
-
-    try:
-        user.height = body_json['height']
-        user.weight = body_json['weight']
-        user.birth_date = body_json['birth_date']
-        user.gender = body_json['gender']
-        user.save()
-
-        return JsonResponse({'message': 'User data updated successfully'}, status=200)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
 
 
 @csrf_exempt

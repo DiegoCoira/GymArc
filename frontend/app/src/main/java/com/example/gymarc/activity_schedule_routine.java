@@ -35,7 +35,6 @@ import java.util.Map;
 
 public class activity_schedule_routine extends AppCompatActivity {
     private Context context = this;
-    private static String user_token;
     private RecyclerView recyclerView;
     private ProgressBar progressbar;
     private TextView text_view_routine_name;
@@ -45,11 +44,11 @@ public class activity_schedule_routine extends AppCompatActivity {
         // Verifica si el usuario ya ha iniciado sesión
         SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", MODE_PRIVATE);
         String token = sharedPreferences.getString("token", null);
+        Log.e("schedule", "token: " + token);
 
         if (token != null) {
-            JSONObject body = new JSONObject();
             setContentView(R.layout.activity_schedule_routine);
-            progressbar = findViewById(R.id.progress_bar_workout);
+            progressbar = findViewById(R.id.progress_bar_schedule_routine);
             BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_menu);
             bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
                 Intent intent = null;
@@ -59,8 +58,8 @@ public class activity_schedule_routine extends AppCompatActivity {
                     intent = new Intent(activity_schedule_routine.this, activity_schedule_routine.class);
                 } else if (itemId == R.id.nav_workout) {
                     intent = new Intent(activity_schedule_routine.this, activity_workout.class);
-                } else if (itemId == R.id.nav_profile) {
-                    intent = new Intent(activity_schedule_routine.this, activity_profile.class);
+                } else if (itemId == R.id.nav_calculator) {
+                    intent = new Intent(activity_schedule_routine.this, activity_calorie_calculator.class);
                 }
 
                 if (intent != null) {
@@ -112,7 +111,8 @@ public class activity_schedule_routine extends AppCompatActivity {
                                     activity_schedule_routine_adapter adapter = new activity_schedule_routine_adapter(routineGroups);
                                     recyclerView.setAdapter(adapter);
                                 } else {
-                                    Log.e("activity_workout", "Empty response or response is null");
+                                    TextView textViewNoRoutines = findViewById(R.id.text_view_no_routines);
+                                    textViewNoRoutines.setVisibility(View.VISIBLE);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -123,11 +123,11 @@ public class activity_schedule_routine extends AppCompatActivity {
                 public void onErrorResponse(VolleyError error) {
                     progressbar.setVisibility(View.INVISIBLE);
                     if (error.networkResponse == null) {
-                        Log.e("activity_workout", "Connection error: " + error.getMessage());
+                        Log.e("activity_schedule_routine", "Connection error: " + error.getMessage());
                         Toast.makeText(context, "Connection could not be established", Toast.LENGTH_LONG).show();
                     } else {
                         int serverCode = error.networkResponse.statusCode;
-                        Log.e("activity_workout", "Server error: " + serverCode);
+                        Log.e("activity_schedule_routine", "Server error: " + serverCode);
                         Toast.makeText(context, "Server error: " + serverCode, Toast.LENGTH_LONG).show();
                     }
                 }
@@ -136,7 +136,7 @@ public class activity_schedule_routine extends AppCompatActivity {
                 @Override
                 public Map<String, String> getHeaders() {
                     Map<String, String> headers = new HashMap<>();
-                    headers.put("Authorization", "f38d0fdac58bf6a6ba72d6531ba4cc23");
+                    headers.put("Authorization", token);
                     return headers;
                 }};
             RequestQueue requestQueue = Volley.newRequestQueue(this);
