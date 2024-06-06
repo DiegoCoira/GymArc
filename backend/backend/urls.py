@@ -25,5 +25,6 @@ urlpatterns = [
     path('sign-in/', views.sign_in),
     path('user-data/', views.user_data),
     path('weekly-training/', views.weekly_training),
-    path('create-routine/', views.create_routine)
+    path('create-routine/', views.create_routine),
+    path('get-exercises/', views.get_exercise)
 ]
