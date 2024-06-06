@@ -47,7 +47,7 @@ class WeeklyRoutine(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.name + " " + self.user.username
+        return self.name
 
 
 class WeeklyRoutineDay(models.Model):
