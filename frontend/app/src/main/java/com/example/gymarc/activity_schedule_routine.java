@@ -40,7 +40,6 @@ public class activity_schedule_routine extends AppCompatActivity {
     private Context context = this;
     private RecyclerView recyclerView;
     private ProgressBar progressbar;
-    private TextView text_view_routine_name;
     private Button create_rutine_button;
 
     @Override
@@ -87,8 +86,6 @@ public class activity_schedule_routine extends AppCompatActivity {
                     fragmentTransaction.commit();
                 }
             });
-
-            List<WeeklyRoutineDay> weeklyRoutineDays = new ArrayList<>();
             List<RoutineGroup> routineGroups = new ArrayList<>();
             JsonArrayRequest request = new JsonArrayRequest(
                     Request.Method.GET,
@@ -137,19 +134,19 @@ public class activity_schedule_routine extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                         }
-                    }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    progressbar.setVisibility(View.INVISIBLE);
-                    if (error.networkResponse == null) {
-                        Log.e("activity_schedule_routine", "Connection error: " + error.getMessage());
-                        Toast.makeText(context, "Connection could not be established", Toast.LENGTH_LONG).show();
-                    } else {
-                        int serverCode = error.networkResponse.statusCode;
-                        Log.e("activity_schedule_routine", "Server error: " + serverCode);
-                        Toast.makeText(context, "Server error: " + serverCode, Toast.LENGTH_LONG).show();
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        progressbar.setVisibility(View.INVISIBLE);
+                        if (error.networkResponse == null) {
+                            Log.e("activity_schedule_routine", "Connection error: " + error.getMessage());
+                            Toast.makeText(context, "Connection could not be established", Toast.LENGTH_LONG).show();
+                        } else {
+                            int serverCode = error.networkResponse.statusCode;
+                            Log.e("activity_schedule_routine", "Server error: " + serverCode);
+                            Toast.makeText(context, "Server error: " + serverCode, Toast.LENGTH_LONG).show();
+                        }
                     }
-                }
             }
             ){
                 @Override

@@ -231,3 +231,20 @@ def create_routine(request):
         # Si la solicitud no es POST, devuelve un error
         return JsonResponse({'error': 'Método no permitido'}, status=405)
 
+
+def get_exercise(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+    user_token = request.headers.get('Authorization')
+    check_token(user_token)
+    exercise = Exercise.objects.all()
+    exercise_list = list(exercise.values())
+    return JsonResponse(exercise_list, status=200, safe=False)
+
+
+
+
+
+
+
+
