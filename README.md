@@ -9,8 +9,6 @@ GymArc es una aplicación de gimnasio diseñada para maximizar tu potencial. Con
 - [Características](#características)
 - [Instalación](#instalación)
 - [Uso](#uso)
-- [Contribución](#contribución)
-- [Licencia](#licencia)
 - [Contacto](#contacto)
 
 ## Características
