@@ -15,4 +15,19 @@
         <item>Very active (hard exercise/sports 6-7 days a week)</item>
         <item>Extra active (very hard exercise/sports and physical job)</item>
     </string-array>
+    <string name="create_rutine">Create Rutine</string>
+
+    <string-array name="muscles_array">
+        <item>Chest</item>
+        <item>Back</item>
+        <item>Shoulders</item>
+        <item>Biceps</item>
+        <item>Triceps</item>
+        <item>Forearms</item>
+        <item>Glutes</item>
+        <item>Quads</item>
+        <item>Hamstrings</item>
+        <item>Calves</item>
+        <item>Core</item>
+    </string-array>
 </resources>

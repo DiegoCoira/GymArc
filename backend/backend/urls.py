@@ -24,5 +24,6 @@ urlpatterns = [
     path('sign-up/', views.sign_up),
     path('sign-in/', views.sign_in),
     path('user-data/', views.user_data),
-    path('weekly-training/', views.weekly_training)
+    path('weekly-training/', views.weekly_training),
+    path('create-routine/', views.create_routine)
 ]

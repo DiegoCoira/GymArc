@@ -1,6 +1,8 @@
 package com.example.gymarc;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -10,6 +12,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +41,8 @@ public class activity_schedule_routine extends AppCompatActivity {
     private RecyclerView recyclerView;
     private ProgressBar progressbar;
     private TextView text_view_routine_name;
+    private Button create_rutine_button;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +74,20 @@ public class activity_schedule_routine extends AppCompatActivity {
 
                 return false;
             });
+
+            create_rutine_button = findViewById(R.id.create_routine_button);
+            create_rutine_button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    FragmentManager fragmentManager = getSupportFragmentManager();
+                    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                    fragment_create_routine fragment = new fragment_create_routine();
+                    fragmentTransaction.add(android.R.id.content, fragment);
+                    fragmentTransaction.addToBackStack(null);
+                    fragmentTransaction.commit();
+                }
+            });
+
             List<WeeklyRoutineDay> weeklyRoutineDays = new ArrayList<>();
             List<RoutineGroup> routineGroups = new ArrayList<>();
             JsonArrayRequest request = new JsonArrayRequest(

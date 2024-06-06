@@ -48,6 +48,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
+    <Button
+        android:id="@+id/create_routine_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Crear Rutina"
+        android:backgroundTint="@color/black"
+        android:textColor="@android:color/white"
+        android:padding="16dp"
+        android:elevation="8dp"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation_menu"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="16dp"
+        />
 
 
 
