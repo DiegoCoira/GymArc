@@ -7,10 +7,7 @@ import traceback
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
-from django.views import View
-from django.http import HttpResponse
 from django.http import JsonResponse
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
@@ -90,12 +87,10 @@ def sign_up(request):
                              register_day=current_datetime)
     user_object.save()
 
-    # Generamos un token para el usuario
     token = secrets.token_hex(16)
     ip_address = body_json['ip_address']
     device_info = body_json['device_info']
 
-    # Guardamos la session
     user_session = UserSession(user=user_object, user_token=token, start_time=current_datetime, ip_address=ip_address,
                                device_info=device_info)
     user_session.save()
@@ -191,50 +186,41 @@ def create_routine(request):
     if request.method == 'POST':
         user_token = request.headers.get('Authorization')
         user = check_token(user_token)
-        # Recibe los datos del JSON enviado desde la aplicación Android
         data = json.loads(request.body)
 
-        # Extrae el nombre de la rutina y los días de la semana con sus músculos
         routine_name = data.get('routineName')
         days = data.get('days')
 
         try:
-            # Verifica que routine_name y user no sean None
             if not routine_name or not user:
-                raise ValueError("El nombre de la rutina y el usuario son obligatorios.")
+                raise ValueError("Routine name or user is invalid.")
 
-            # Crea una instancia de WeeklyRoutine y la guarda en la base de datos
             print(user)
             routine = WeeklyRoutine.objects.create(name=routine_name, user=user)
 
-            # Itera sobre los días de la semana y crea instancias de WeeklyRoutineDay asociadas a la rutina
             for day_data in days:
                 day_name = day_data['day']
-                muscles = day_data['muscles'].split(", ")  # Divide la cadena de músculos en una lista
-                if muscles == ["Select muscles"]:  # Corrige la comparación
-                    muscles = ["Rest day"]  # Asegúrate de que sea una lista de un solo elemento
+                muscles = day_data['muscles'].split(", ")
+                if muscles == ["Select muscles"]:
+                    muscles = ["Rest day"]
 
-                # Crea la instancia de WeeklyRoutineDay
                 day_instance = WeeklyRoutineDay.objects.create(routine=routine, day=day_name)
 
                 for muscle_name in muscles:
                     muscle_instance, created = Muscle.objects.get_or_create(name=muscle_name)
-                    day_instance.muscles.add(muscle_instance)  # Añade el músculo a la relación ManyToMany
+                    day_instance.muscles.add(muscle_instance)
 
         except Exception as e:
-            # Si ocurre algún error durante la creación de la rutina, devuelve un mensaje de error
             return JsonResponse({'error': str(e)}, status=500)
 
-        # Devuelve una respuesta JSON indicando que la rutina ha sido creada exitosamente
-        return JsonResponse({'message': 'Rutina creada exitosamente'}, status=201)
+        return JsonResponse({'message': 'Routine Created'}, status=201)
     else:
-        # Si la solicitud no es POST, devuelve un error
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
+        return JsonResponse({'error': 'Not supported HTTP method'}, status=405)
 
 
 def get_exercise(request):
     if request.method != 'GET':
-        return JsonResponse({'error': 'Método no permitido'}, status=405)
+        return JsonResponse({'error': 'Not supported HTTP method'}, status=405)
     user_token = request.headers.get('Authorization')
     check_token(user_token)
     exercise = Exercise.objects.all()
