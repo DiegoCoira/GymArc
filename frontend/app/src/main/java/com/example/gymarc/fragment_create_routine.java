@@ -119,8 +119,40 @@ public class fragment_create_routine extends Fragment {
 
                     JSONArray routineArray = new JSONArray();
 
-                    // Adding details for each day of the week
-                    // Similar block for other days...
+                    JSONObject monday = new JSONObject();
+                    monday.put("day", "Monday");
+                    monday.put("muscles", musclesEditTextMonday.getText().toString());
+                    routineArray.put(monday);
+
+                    JSONObject tuesday = new JSONObject();
+                    tuesday.put("day", "Tuesday");
+                    tuesday.put("muscles", musclesEditTextTuesday.getText().toString());
+                    routineArray.put(tuesday);
+
+                    JSONObject wednesday = new JSONObject();
+                    wednesday.put("day", "Wednesday");
+                    wednesday.put("muscles", musclesEditTextWednesday.getText().toString());
+                    routineArray.put(wednesday);
+
+                    JSONObject thursday = new JSONObject();
+                    thursday.put("day", "Thursday");
+                    thursday.put("muscles", musclesEditTextThursday.getText().toString());
+                    routineArray.put(thursday);
+
+                    JSONObject friday = new JSONObject();
+                    friday.put("day", "Friday");
+                    friday.put("muscles", musclesEditTextFriday.getText().toString());
+                    routineArray.put(friday);
+
+                    JSONObject saturday = new JSONObject();
+                    saturday.put("day", "Saturday");
+                    saturday.put("muscles", musclesEditTextSaturday.getText().toString());
+                    routineArray.put(saturday);
+
+                    JSONObject sunday = new JSONObject();
+                    sunday.put("day", "Sunday");
+                    sunday.put("muscles", MusclesEditTextSunday.getText().toString());
+                    routineArray.put(sunday);
 
                     // Adding days array to the body JSON object
                     body.put("days", routineArray);
