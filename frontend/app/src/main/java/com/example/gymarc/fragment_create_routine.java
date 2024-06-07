@@ -66,6 +66,42 @@ public class fragment_create_routine extends Fragment {
                 showMusclesDialog("Monday", musclesEditTextMonday);
             }
         });
+        musclesEditTextTuesday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMusclesDialog("Tuesday", musclesEditTextTuesday);
+            }
+        });
+        musclesEditTextWednesday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMusclesDialog("Wednesday", musclesEditTextWednesday);
+            }
+        });
+        musclesEditTextThursday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMusclesDialog("Thursday", musclesEditTextThursday);
+            }
+        });
+        musclesEditTextFriday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMusclesDialog("Friday", musclesEditTextFriday);
+            }
+        });
+        musclesEditTextSaturday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMusclesDialog("Saturday", musclesEditTextSaturday);
+            }
+        });
+        MusclesEditTextSunday.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMusclesDialog("Sunday", MusclesEditTextSunday);
+            }
+        });
 
         // Similar onClickListeners for other days...
 
