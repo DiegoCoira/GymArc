@@ -38,19 +38,26 @@ public class activity_sign_up extends AppCompatActivity {
     private boolean check_info;
     private RequestQueue queue;
 
-    private static final String TAG = "Sign_In";
+    private static final String TAG = "Sign_Up";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set layout
         setContentView(R.layout.activity_sign_up);
+
+        // Retrieve token from SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", MODE_PRIVATE);
         String token = sharedPreferences.getString("token", null);
+
+        // If token exists, redirect to schedule routine activity
         if(token != null){
             Intent intent = new Intent(activity_sign_up.this, activity_schedule_routine.class);
             startActivity(intent);
         }
 
+        // Initialize views
         editTextUsername = findViewById(R.id.sign_up_edittext_username);
         editTextEmail = findViewById(R.id.sign_up_edittext_email);
         editTextPassword = findViewById(R.id.sign_up_edittext_password);
@@ -60,21 +67,22 @@ public class activity_sign_up extends AppCompatActivity {
         progressBar = findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
 
-        // Inicializar RequestQueue
+        // Initialize RequestQueue
         queue = Volley.newRequestQueue(context);
 
+        // Register button click listener
         buttonRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Validate input fields
                 check_info = true;
-
                 email = editTextEmail.getText().toString();
                 name = editTextUsername.getText().toString();
                 password = editTextPassword.getText().toString();
                 rpassword = editTextRepeatPassword.getText().toString();
-
                 check_info = check_inputs();
 
+                // If input fields are valid, send registration request
                 if (check_info) {
                     send_post_register();
                     progressBar.setVisibility(View.VISIBLE);
@@ -82,41 +90,45 @@ public class activity_sign_up extends AppCompatActivity {
             }
         });
 
+        // Login button click listener
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Redirect to sign-in activity
                 Intent intent = new Intent(activity_sign_up.this, activity_sign_in.class);
                 startActivity(intent);
             }
         });
     }
 
+    // Method to check input fields for validity
     private boolean check_inputs() {
         if (name.isEmpty()) {
-            Toast.makeText(activity_sign_up.this, "Introduce un nombre de usuario", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_sign_up.this, "Enter a username", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (email.isEmpty()) {
-            Toast.makeText(activity_sign_up.this, "Introduce un email", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_sign_up.this, "Enter an email", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (password.isEmpty() || rpassword.isEmpty()) {
-            Toast.makeText(activity_sign_up.this, "Introduce todos los datos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_sign_up.this, "Enter all data", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (!password.equals(rpassword)) {
             editTextPassword.setText("");
             editTextRepeatPassword.setText("");
-            Toast.makeText(activity_sign_up.this, "Las contraseñas han de ser iguales", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity_sign_up.this, "Passwords must match", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         return true;
     }
 
+    // Method to send POST request for registration
     private void send_post_register() {
         JSONObject body = new JSONObject();
         try {
@@ -136,38 +148,41 @@ public class activity_sign_up extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        // Hide progress bar
                         progressBar.setVisibility(View.INVISIBLE);
                         String receivedToken;
                         try {
+                            // Retrieve token from response
                             receivedToken = response.getString("token");
                         } catch (JSONException e) {
                             throw new RuntimeException(e);
                         }
 
-                        // Obtén una referencia a SharedPreferences
+                        // Store token in SharedPreferences
                         SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", Context.MODE_PRIVATE);
-                        // Crea un editor de SharedPreferences para realizar cambios
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-
-                        // Almacena el token de sesión
                         editor.putString("token", receivedToken);
-                        // Guarda los cambios
                         editor.apply();
 
-                          Intent intent = new Intent(activity_sign_up.this, activity_schedule_routine.class);
-                          startActivity(intent);
-                          finishAffinity();
+                        // Redirect to schedule routine activity and finish current activity
+                        Intent intent = new Intent(activity_sign_up.this, activity_schedule_routine.class);
+                        startActivity(intent);
+                        finishAffinity();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        // Hide progress bar
                         progressBar.setVisibility(View.INVISIBLE);
+
+                        // Handle error responses
                         if (error.networkResponse == null) {
                             Log.e(TAG, "Error Response: " + error.toString());
-                            Toast.makeText(activity_sign_up.this, "No se pudo alcanzar al servidor", Toast.LENGTH_LONG).show();
+                            Toast.makeText(activity_sign_up.this, "Could not reach server", Toast.LENGTH_LONG).show();
                         } else {
                             try {
+                                // Parse error data and display error message
                                 String data = new String(error.networkResponse.data, StandardCharsets.UTF_8);
                                 JSONObject json_error_data = new JSONObject(data);
                                 Toast.makeText(activity_sign_up.this, "Error: " + json_error_data.optString("error"), Toast.LENGTH_LONG).show();
@@ -179,9 +194,11 @@ public class activity_sign_up extends AppCompatActivity {
                     }
                 }
         );
+        // Add request to the RequestQueue
         queue.add(request);
     }
 
+    // Method to get device's IP address
     private String getIPAddress() {
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
@@ -202,6 +219,7 @@ public class activity_sign_up extends AppCompatActivity {
         return "";
     }
 
+    // Method to get device's information
     private String getDeviceInfo() {
         return "Device: " + android.os.Build.DEVICE + ", Model: " + android.os.Build.MODEL + ", Product: " + android.os.Build.PRODUCT;
     }

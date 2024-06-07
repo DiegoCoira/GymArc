@@ -45,7 +45,7 @@ public class activity_schedule_routine extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Verifica si el usuario ya ha iniciado sesión
+        // Check if the user has already logged in
         SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", MODE_PRIVATE);
         String token = sharedPreferences.getString("token", null);
         Log.e("schedule", "token: " + token);
@@ -78,6 +78,7 @@ public class activity_schedule_routine extends AppCompatActivity {
             create_rutine_button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    // Open the create routine fragment
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     fragment_create_routine fragment = new fragment_create_routine();
@@ -97,6 +98,7 @@ public class activity_schedule_routine extends AppCompatActivity {
                             progressbar.setVisibility(View.INVISIBLE);
                             try {
                                 if (response != null && response.length() > 0) {
+                                    // Parse the JSON response and populate routineGroups list
                                     Map<String, List<WeeklyRoutineDay>> routineMap = new HashMap<>();
                                     for (int i = 0; i < response.length(); i++) {
                                         JSONObject routineObject = response.getJSONObject(i);
@@ -127,6 +129,7 @@ public class activity_schedule_routine extends AppCompatActivity {
                                     activity_schedule_routine_adapter adapter = new activity_schedule_routine_adapter(routineGroups);
                                     recyclerView.setAdapter(adapter);
                                 } else {
+                                    // If there are no routines, show a message
                                     TextView textViewNoRoutines = findViewById(R.id.text_view_no_routines);
                                     textViewNoRoutines.setVisibility(View.VISIBLE);
                                 }
@@ -134,23 +137,24 @@ public class activity_schedule_routine extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                         }
-                        }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        progressbar.setVisibility(View.INVISIBLE);
-                        if (error.networkResponse == null) {
-                            Log.e("activity_schedule_routine", "Connection error: " + error.getMessage());
-                            Toast.makeText(context, "Connection could not be established", Toast.LENGTH_LONG).show();
-                        } else {
-                            int serverCode = error.networkResponse.statusCode;
-                            Log.e("activity_schedule_routine", "Server error: " + serverCode);
-                            Toast.makeText(context, "Server error: " + serverCode, Toast.LENGTH_LONG).show();
-                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    progressbar.setVisibility(View.INVISIBLE);
+                    if (error.networkResponse == null) {
+                        Log.e("activity_schedule_routine", "Connection error: " + error.getMessage());
+                        Toast.makeText(context, "Connection could not be established", Toast.LENGTH_LONG).show();
+                    } else {
+                        int serverCode = error.networkResponse.statusCode;
+                        Log.e("activity_schedule_routine", "Server error: " + serverCode);
+                        Toast.makeText(context, "Server error: " + serverCode, Toast.LENGTH_LONG).show();
                     }
+                }
             }
             ){
                 @Override
                 public Map<String, String> getHeaders() {
+                    // Add authorization header with token
                     Map<String, String> headers = new HashMap<>();
                     headers.put("Authorization", token);
                     return headers;
@@ -158,9 +162,8 @@ public class activity_schedule_routine extends AppCompatActivity {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
             requestQueue.add(request);
 
-
-
         } else {
+            // If user is not logged in, redirect to sign-in activity
             Intent intent = new Intent(activity_schedule_routine.this, activity_sign_in.class);
             startActivity(intent);
         }
