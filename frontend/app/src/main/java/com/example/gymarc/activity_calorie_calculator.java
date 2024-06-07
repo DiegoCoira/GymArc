@@ -207,6 +207,26 @@ public class activity_calorie_calculator extends AppCompatActivity {
     // Update UI with user data
     private void updateViewOnResponse() {
         setContentView(R.layout.activity_calorie_calculator_data);
+BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_menu);
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            Intent intent = null;
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_schedule) {
+                intent = new Intent(context, activity_schedule_routine.class);
+            } else if (itemId == R.id.nav_workout) {
+                intent = new Intent(context, activity_workout.class);
+            } else if (itemId == R.id.nav_calculator) {
+                intent = new Intent(context, activity_calorie_calculator.class);
+            }
+
+            if (intent != null) {
+                startActivity(intent);
+                return true;
+            }
+
+            return false;
+        });
 
         // Initialize views
         user_birthdate_data = findViewById(R.id.text_view_user_birth_date);
