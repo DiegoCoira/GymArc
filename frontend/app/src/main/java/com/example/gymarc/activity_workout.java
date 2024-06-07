@@ -41,14 +41,22 @@ public class activity_workout extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Retrieve token from SharedPreferences
         SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", MODE_PRIVATE);
         String token = sharedPreferences.getString("token", null);
+
+        // Redirect to sign-in activity if token is null
         if (token == null){
             Intent intent = new Intent(activity_workout.this, activity_sign_in.class);
             startActivity(intent);
         }
+
+        // Set the layout
         setContentView(R.layout.activity_workout);
         progressbar = findViewById(R.id.progress_bar_workout);
+
+        // Initialize and setup bottom navigation view
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_menu);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Intent intent = null;
@@ -68,54 +76,70 @@ public class activity_workout extends AppCompatActivity {
             }
             return false;
         });
+
+        // Initialize list to store exercises
         List<Exercise> exercises_list = new ArrayList<>();
+
+        // Create JSON request to fetch exercises
         JsonArrayRequest request = new JsonArrayRequest(
                 Request.Method.GET,
                 "http://10.0.2.2:8000/get-exercises/",
                 null,
                 new Response.Listener<JSONArray>() {
-
                     @Override
                     public void onResponse(JSONArray response) {
+                        // Hide progress bar
                         progressbar.setVisibility(View.INVISIBLE);
+
+                        // Iterate through JSON array and parse exercises
                         for (int i = 0; i < response.length(); i++) {
-                            JSONObject exerciseJson = null;
                             try {
-                                exerciseJson = response.getJSONObject(i);
+                                JSONObject exerciseJson = response.getJSONObject(i);
+                                // Retrieve exercise name from JSON object
+                                String name = exerciseJson.optString("name", "Unknown Exercise"); // Use optString to avoid exceptions
+                                // Create Exercise object and add to list
+                                Exercise exercise = new Exercise(name);
+                                exercises_list.add(exercise);
                             } catch (JSONException e) {
                                 throw new RuntimeException(e);
                             }
-                            String name = exerciseJson.optString("name", "Unknown Exercise"); // Utiliza optString para evitar excepciones
-                            Exercise exercise = new Exercise(name);
-                            exercises_list.add(exercise);
                         }
 
+                        // Set up RecyclerView with LinearLayoutManager and custom adapter
                         recyclerView = findViewById(R.id.workout_recycler_view);
                         recyclerView.setLayoutManager(new LinearLayoutManager(context));
                         activity_workout_adapter adapter = new activity_workout_adapter(exercises_list);
                         recyclerView.setAdapter(adapter);
                     }
-                }, new Response.ErrorListener() {
-        @Override
-        public void onErrorResponse(VolleyError error) {
-            progressbar.setVisibility(View.INVISIBLE);
-            if (error.networkResponse == null) {
-                Log.e("activity_schedule_routine", "Connection error: " + error.getMessage());
-                Toast.makeText(context, "Connection could not be established", Toast.LENGTH_LONG).show();
-            } else {
-                int serverCode = error.networkResponse.statusCode;
-                Log.e("activity_schedule_routine", "Server error: " + serverCode);
-                Toast.makeText(context, "Server error: " + serverCode, Toast.LENGTH_LONG).show();
-            }
-        }
-        }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // Hide progress bar
+                        progressbar.setVisibility(View.INVISIBLE);
+
+                        // Handle Volley error responses
+                        if (error.networkResponse == null) {
+                            Log.e("activity_schedule_routine", "Connection error: " + error.getMessage());
+                            Toast.makeText(context, "Connection could not be established", Toast.LENGTH_LONG).show();
+                        } else {
+                            int serverCode = error.networkResponse.statusCode;
+                            Log.e("activity_schedule_routine", "Server error: " + serverCode);
+                            Toast.makeText(context, "Server error: " + serverCode, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
         ){
+            // Override method to include Authorization header with token
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Authorization", token);
                 return headers;
-            }};
+            }
+        };
+
+        // Add the JSON request to the Volley request queue
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         requestQueue.add(request);
     }

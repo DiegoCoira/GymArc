@@ -44,15 +44,20 @@ public class activity_sign_in extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Check if the user is already logged in
         SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", MODE_PRIVATE);
         String token = sharedPreferences.getString("token", null);
 
+        // If token exists, redirect to schedule routine activity
         if(token != null){
             Intent intent = new Intent(activity_sign_in.this, activity_schedule_routine.class);
             startActivity(intent);
         }
+
+        // Set layout
         setContentView(R.layout.activity_sign_in);
 
+        // Initialize views
         editTextEmail = findViewById(R.id.sign_in_edittext_email);
         editTextPassword = findViewById(R.id.sign_in_edittext_password);
         buttonLogin = findViewById(R.id.sign_in_login_button);
@@ -60,27 +65,32 @@ public class activity_sign_in extends AppCompatActivity {
         progressBar = findViewById(R.id.progress_bar);
         progressBar.setVisibility(View.GONE);
 
+        // Initialize RequestQueue
         queue = Volley.newRequestQueue(context);
 
+        // Login button click listener
         buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Validate input fields
                 check_info = true;
-
                 email = editTextEmail.getText().toString();
                 password = editTextPassword.getText().toString();
-
                 check_info = check_inputs();
 
+                // If input fields are valid, send login request
                 if (check_info) {
                     send_post_login();
                     progressBar.setVisibility(View.VISIBLE);
                 }
             }
         });
+
+        // Register button click listener
         buttonRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Redirect to sign-up activity
                 Intent intent = new Intent(context, activity_sign_up.class);
                 startActivity(intent);
                 finish();
@@ -88,20 +98,22 @@ public class activity_sign_in extends AppCompatActivity {
         });
     }
 
+    // Method to check input fields for validity
     private boolean check_inputs() {
         if (email.isEmpty()) {
-            Toast.makeText(context, "Introduce un email", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Enter an email", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         if (password.isEmpty()) {
-            Toast.makeText(context, "Introduce todos los datos", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Enter all data", Toast.LENGTH_SHORT).show();
             return false;
         }
 
         return true;
     }
 
+    // Method to send POST request for login
     private void send_post_login() {
         JSONObject body = new JSONObject();
         try {
@@ -119,24 +131,23 @@ public class activity_sign_in extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        // Hide progress bar
                         progressBar.setVisibility(View.INVISIBLE);
                         String receivedToken;
                         try {
+                            // Retrieve token from response
                             receivedToken = response.getString("token");
                         } catch (JSONException e) {
                             throw new RuntimeException(e);
                         }
 
-                        // Obtén una referencia a SharedPreferences
+                        // Store token in SharedPreferences
                         SharedPreferences sharedPreferences = getSharedPreferences("MiSharedPreferences", Context.MODE_PRIVATE);
-                        // Crea un editor de SharedPreferences para realizar cambios
                         SharedPreferences.Editor editor = sharedPreferences.edit();
-
-                        // Almacena el token de sesión
                         editor.putString("token", receivedToken);
-                        // Guarda los cambios
                         editor.apply();
 
+                        // Redirect to schedule routine activity and finish current activity
                         Intent intent = new Intent(activity_sign_in.this, activity_schedule_routine.class);
                         startActivity(intent);
                         finishAffinity();
@@ -145,12 +156,16 @@ public class activity_sign_in extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        // Hide progress bar
                         progressBar.setVisibility(View.INVISIBLE);
+
+                        // Handle error responses
                         if (error.networkResponse == null) {
                             Log.e(TAG, "Error Response: " + error.toString());
-                            Toast.makeText(context, "No se pudo alcanzar al servidor", Toast.LENGTH_LONG).show();
+                            Toast.makeText(context, "Could not reach server", Toast.LENGTH_LONG).show();
                         } else {
                             try {
+                                // Parse error data and display error message
                                 String data = new String(error.networkResponse.data, StandardCharsets.UTF_8);
                                 JSONObject json_error_data = new JSONObject(data);
                                 Toast.makeText(context, "Error: " + json_error_data.optString("error"), Toast.LENGTH_LONG).show();
@@ -162,9 +177,11 @@ public class activity_sign_in extends AppCompatActivity {
                     }
                 }
         );
+        // Add request to the RequestQueue
         queue.add(request);
     }
 
+    // Method to get device's IP address
     private String getIPAddress() {
         try {
             List<NetworkInterface> interfaces = Collections.list(NetworkInterface.getNetworkInterfaces());
@@ -185,6 +202,7 @@ public class activity_sign_in extends AppCompatActivity {
         return "";
     }
 
+    // Method to get device's information
     private String getDeviceInfo() {
         return "Device: " + android.os.Build.DEVICE + ", Model: " + android.os.Build.MODEL + ", Product: " + android.os.Build.PRODUCT;
     }

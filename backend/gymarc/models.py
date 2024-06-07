@@ -65,12 +65,6 @@ class WeeklyRoutineDay(models.Model):
     day = models.CharField(max_length=10, choices=DAY_CHOICES)
     muscles = models.ManyToManyField(Muscle, blank=True)
 
-    def to_json(self):
-        return {
-            "name": self.routine.name,
-            "day": self.day,
-            "muscles": self.muscles,
-        }
 
     class Meta:
         constraints = [

@@ -84,12 +84,11 @@ public class activity_calorie_calculator extends AppCompatActivity {
             setupSpinners();
             fetchUserData(token);
 
-
             button_calculate_calories = findViewById(R.id.button_calculate_calories);
             button_calculate_calories.setOnClickListener(new View.OnClickListener() {
-
                 @Override
                 public void onClick(View v) {
+                    // Extract user input and calculate calories
                     height = user_height.getText().toString();
                     weight = user_weight.getText().toString();
                     birth_date = user_birthdate.getText().toString();
@@ -98,6 +97,7 @@ public class activity_calorie_calculator extends AppCompatActivity {
                     float maintenance_calories = calculate_calories();
                     Toast.makeText(context, "Maintenance calories: " + maintenance_calories, Toast.LENGTH_LONG).show();
 
+                    // Prepare request body
                     JSONObject body = new JSONObject();
                     try {
                         body.put("height", height);
@@ -109,7 +109,8 @@ public class activity_calorie_calculator extends AppCompatActivity {
                         e.printStackTrace();
                         return;
                     }
-                    Log.e("da", "body:" + body);
+
+                    // Send request to update user data
                     JsonObjectRequest request = new JsonObjectRequest(
                             Request.Method.PUT,
                             "http://10.0.2.2:8000/user-data/",
@@ -117,13 +118,14 @@ public class activity_calorie_calculator extends AppCompatActivity {
                             new Response.Listener<JSONObject>() {
                                 @Override
                                 public void onResponse(JSONObject response) {
-
+                                    // Handle response and update UI
                                     updateViewOnResponse();
                                 }
                             },
                             new Response.ErrorListener() {
                                 @Override
                                 public void onErrorResponse(VolleyError error) {
+                                    // Handle error
                                     progress_bar.setVisibility(View.INVISIBLE);
                                     if (error.networkResponse == null) {
                                         Log.e("activity_workout", "Connection error: " + error.getMessage());
@@ -137,22 +139,26 @@ public class activity_calorie_calculator extends AppCompatActivity {
                             }) {
                         @Override
                         public Map<String, String> getHeaders() {
+                            // Include authorization header
                             Map<String, String> headers = new HashMap<>();
                             headers.put("Authorization", token);
                             return headers;
                         }
                     };
 
+                    // Add request to queue
                     RequestQueue requestQueue = Volley.newRequestQueue(context);
                     requestQueue.add(request);
                 }
             });
         } else {
+            // If user is not logged in, redirect to sign-in activity
             Intent intent = new Intent(activity_calorie_calculator.this, activity_sign_in.class);
             startActivity(intent);
         }
     }
 
+    // Fetch user data from the server
     private void fetchUserData(String token) {
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
@@ -161,22 +167,18 @@ public class activity_calorie_calculator extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            String heightResponse = response.optString("height", null);
+                        // Parse response and update UI
+                        try {                            String heightResponse = response.optString("height", null);
                             String weightResponse = response.optString("weight", null);
                             String birthDateResponse = response.optString("birth_date", null);
                             String activityFactorResponse = response.optString("activity_factor", null);
-                            Log.e("calculator","response: " + heightResponse + weightResponse +birthDateResponse + activityFactorResponse);
                             if (heightResponse != null && weightResponse != null && birthDateResponse != null && activityFactorResponse != null){
-                                Log.e("calculator","Reached inside if, in fetch_data");
                                 height = response.getString("height");
                                 weight = response.getString("weight");
                                 birth_date = response.getString("birth_date");
                                 gender = response.getString("gender");
-                                Log.e("activity_calorie_calculator","birth_date:" + birth_date);
                                 activity_factor = response.getString("activity_factor");
                                 updateViewOnResponse();
-
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -191,6 +193,7 @@ public class activity_calorie_calculator extends AppCompatActivity {
                 }) {
             @Override
             public Map<String, String> getHeaders() {
+                // Include authorization header
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Authorization", token);
                 return headers;
@@ -201,31 +204,11 @@ public class activity_calorie_calculator extends AppCompatActivity {
         requestQueue.add(request);
     }
 
+    // Update UI with user data
     private void updateViewOnResponse() {
         setContentView(R.layout.activity_calorie_calculator_data);
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_menu);
-        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            Intent intent = null;
-            int itemId = item.getItemId();
-
-            if (itemId == R.id.nav_schedule) {
-                intent = new Intent(context, activity_schedule_routine.class);
-            } else if (itemId == R.id.nav_workout) {
-                intent = new Intent(context, activity_workout.class);
-            } else if (itemId == R.id.nav_calculator) {
-                intent = new Intent(context, activity_calorie_calculator.class);
-            }
-
-            if (intent != null) {
-                startActivity(intent);
-                return true;
-            }
-
-            return false;
-        });
-
-        float calories = calculate_calories();
+        // Initialize views
         user_birthdate_data = findViewById(R.id.text_view_user_birth_date);
         user_weight_data = findViewById(R.id.text_view_user_weight);
         user_height_data = findViewById(R.id.text_view_user_height);
@@ -234,16 +217,20 @@ public class activity_calorie_calculator extends AppCompatActivity {
         calories_deficit = findViewById(R.id.text_view_calories_deficit);
         calories_surplus = findViewById(R.id.text_view_calories_surplus);
 
+        // Set user data
         user_height_data.setText("Height: " + height + "cm");
         user_birthdate_data.setText("Birth Date: " + birth_date);
         user_weight_data.setText("Weight: " + weight + "kg");
         user_gender_data.setText("Gender: " + gender);
+
+        // Calculate and display calories
+        float calories = calculate_calories();
         calories_maintenance.setText("Maintenance: " + calories);
         calories_surplus.setText("Surplus: " + (calories + 300));
         calories_deficit.setText("Deficit: " + (calories - 450));
-
     }
 
+    // Show date picker dialog to select birth date
     private void showDatePickerDialog() {
         final Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
@@ -261,6 +248,7 @@ public class activity_calorie_calculator extends AppCompatActivity {
         datePickerDialog.show();
     }
 
+    // Initialize spinners with gender and activity factor options
     private void setupSpinners() {
         ArrayAdapter<CharSequence> genderAdapter = ArrayAdapter.createFromResource(this,
                 R.array.gender_array, android.R.layout.simple_spinner_item);
@@ -273,12 +261,11 @@ public class activity_calorie_calculator extends AppCompatActivity {
         spinner_activity_factor.setAdapter(activityFactorAdapter);
     }
 
+    // Calculate total calories
     private float calculate_calories() {
         float float_activity_factor = calculate_activity_factor();
         float age = calculate_age();
-        Log.e("activity_calorie_calculator", "float_activity_factor: " + float_activity_factor);
-        Log.e("activity_calorie_calculator", "age: " + age);
-        Log.e("activity_calorie_calculator", "activity: " + activity_factor);
+
         float calories_number;
         if (gender.equals("Male")) {
             calories_number = (float) (((10 * Float.valueOf(weight)) + (6.25 * Float.valueOf(height)) - (5 * age) + 5) * float_activity_factor);
@@ -288,6 +275,7 @@ public class activity_calorie_calculator extends AppCompatActivity {
         return calories_number;
     }
 
+    // Calculate age based on birth date
     private float calculate_age() {
         String[] parts = birth_date.split("-");
         float birth_year = Float.valueOf(parts[0]);
@@ -299,7 +287,6 @@ public class activity_calorie_calculator extends AppCompatActivity {
         float current_year = calendar.get(Calendar.YEAR);
         float current_month = calendar.get(Calendar.MONTH);
         float current_day = calendar.get(Calendar.DAY_OF_MONTH);
-        Log.e("activity_calorie_calculator", "birth_year: " + birth_year);
 
         age = current_year - birth_year;
         if (current_month < birth_month) {
@@ -315,6 +302,7 @@ public class activity_calorie_calculator extends AppCompatActivity {
         }
     }
 
+    // Calculate activity factor based on user selection
     private float calculate_activity_factor() {
         switch (activity_factor) {
             case "Sedentary (little or no exercise)":
@@ -332,5 +320,4 @@ public class activity_calorie_calculator extends AppCompatActivity {
                 return 1.0F;
         }
     }
-
 }
